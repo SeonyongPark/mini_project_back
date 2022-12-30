@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.whereismyhome.model.mapper.ApartMapper">
+	<resultMap type="data" id="sido">
+		<result column="sidoName" property="name" />
+		<result column="sido" property="code" />
+	</resultMap>
+
+	<resultMap type="data" id="gugun">
+		<result column="gugunName" property="name" />
+		<result column="gugun" property="code" />
+		<result column="interest" property="no" />
+	</resultMap>
+
+	<resultMap type="data" id="dong">
+		<result column="dongName" property="name" />
+		<result column="dongcode" property="code" />
+		<result column="interest" property="no" />
+	</resultMap>
+
+	<resultMap type="houseDTO" id="house">
+		<result column="aptCode" property="aptCode" />
+		<result column="apartmentName" property="apartmentName" />
+		<result column="dealAmount" property="dealAmount" />
+		<result column="area" property="area" />
+		<result column="floor" property="floor" />
+		<result column="date" property="date" />
+		<result column="lng" property="lng" />
+		<result column="lat" property="lat" />
+		<result column="like_id" property="like_id" />
+		<result column="no" property="no" />
+	</resultMap>
+	<select id="searchDeal" parameterType="map" resultMap="house">
+		select
+		i.aptCode, i.apartmentName, b.dealAmount, b.area,
+		b.floor,
+		concat(b.dealYear,'.', b.dealMonth,'.', b.dealDay) date, i.lng, i.lat, b.no
+		from housedeal as b left join houseinfo as i
+		on b.aptCode = i.aptCode
+		where i.dongCode like #{code} and b.dealMonth = #{month} and
+		b.dealYear = #{year}
+	</select>
+
+	<select id="getSido" resultMap="sido">
+		select sidoName ,
+		left(dongCode,2) sido
+		from dongCode
+		where right(dongCode,8) = '00000000'
+	</select>
+
+	<select id="getGugun" parameterType="Data" resultMap="gugun">
+		select
+		d.gugunName, left(d.dongCode, 5) gugun
+		from dongcode as d left join interest as i on d.dongcode =
+		i.dongcode
+		where right(d.dongcode,5) = '00000' and left(d.dongcode,2) =
+		#{code}
+		and d.gugunname is not null
+	</select>
+
+	<select id="getDong" parameterType="Data" resultMap="dong">
+		select
+		dongcode, dongname
+		from dongCode
+		where
+		left(dongcode,5) =
+		#{code} and dongname is
+		not null
+	</select>
+
+	<insert id="addApart" parameterType="ApartDTO">
+		insert into
+		houselike(user_id, no, register_time, ip_address)
+		values(#{user_id},#{no},now(), #{ip_address})
+	</insert>
+
+	<delete id="deleteApart">
+		delete from houselike
+		where
+		user_id = #{user_id} and
+		no = #{aprCode}
+	</delete>
+
+	<select id="avg" parameterType="string" resultType="aggregateDTO">
+		SELECT i.dongCode, round(avg(replace(b.dealAmount, ',','')), 0) as dealAmount
+		FROM housedeal as b
+		left join houseinfo as i
+		on b.aptCode = i.aptCode
+		where dongCode like #{code}
+		GROUP BY i.dongCode;
+	</select>
+
+	<select id="history" parameterType="string" resultMap="house">
+		select replace(dealAmount, ',','') dealAmount, concat(dealYear,'.', dealMonth,'.', dealDay) date
+		from housedeal
+		where aptCode = #{code};
+	</select>
+
+</mapper>

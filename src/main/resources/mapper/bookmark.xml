@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.whereismyhome.model.mapper.BookmarkMapper">
+    <resultMap type="bookmarkDTO" id="dto">
+        <result column="user_id" property="user_id" />
+        <result column="no" property="no" />
+        <result column="aptCode" property="aptCode" />
+        <result column="register_time" property="register_time" />
+    </resultMap>
+    <resultMap type="HouseinfoDTO" id="hdto">
+        <result column="aptCode" property="aptCode" />
+        <result column="user_id" property="user_id" />
+        <result column="no" property="no" />
+        <result column="register_time" property="register_time" />
+        <result column="apartmentName" property="apartmentName" />
+    </resultMap>
+
+    <select id="list" parameterType="string" resultMap="hdto">
+        select i.aptCode aptCode, user_id, no, register_time, apartmentName, lat, lng
+        from houselike as h left join houseinfo as i
+        on h.aptCode = i.aptCode
+        where user_id = #{userId};
+    </select>
+
+    <select id="comfirm" parameterType="map" resultMap="dto">
+        select user_id, no, aptCode, register_time
+        from houselike
+        where user_id = #{userId} and aptCode = #{code};
+
+    </select>
+
+    <insert id="like" parameterType="bookmarkDTO">
+        insert
+        into houselike(user_id, aptCode, register_time)
+        values(#{user_id}, #{aptCode}, now());
+    </insert>
+
+    <delete id="delete" parameterType="string">
+        delete
+        from houselike
+        where aptCode = #{code};
+    </delete>
+
+
+
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.whereismyhome.model.mapper.BoardMapper">
+	<resultMap type="boardDTO" id="dto">
+		<result column="board_no" property="boardNo"/>
+		<result column="user_id" property="userId"/>
+		<result column="subject" property="subject"/>
+		<result column="content" property="content"/>
+		<result column="type" property="type"/>
+		<result column="register_time" property="registerTime"/>
+	</resultMap>
+
+	<insert id="write" parameterType="boardDTO">
+		insert 
+		into board(user_id, subject, content, type)
+		values(#{userId},#{subject},#{content}, #{type})
+	</insert>
+	<select id="view" parameterType="int" resultMap="dto">
+		select board_no, user_id, subject, content, register_time
+		from board
+		where board_no = #{no}
+	</select>
+	<delete id="delete" parameterType="boardDTO">
+		delete from board
+		where board_no = #{boardNo} 
+	</delete>
+	
+	<update id="update" parameterType="boardDTO">
+		update board
+		set subject = #{subject}, content = #{content}
+		where board_no = #{boardNo} 
+	</update>
+
+	<select id="getTotalCount" parameterType="map" resultType="int">
+		select count(board_no)
+		from board
+		where type = #{type}
+		<if test="word != null and word != ''">
+			<if test="key == 'subject'">
+				where subject like concat('%', #{word}, '%')
+			</if>
+			<if test="key != 'subject'">
+				where ${key} = #{word}
+			</if>
+		</if>
+	</select>
+
+	<select id="list" parameterType="boardParameterDto" resultMap="dto">
+		select board_no, user_id, subject, content, type,
+		case when date_format(register_time, '%Y%m%d') = date_format(now(), '%Y%m%d')
+		then date_format(register_time, '%H:%i:%s')
+		else date_format(register_time, '%y.%m.%d')
+		end register_time
+		from board
+		where type = #{type}
+		<if test="word != null and word != ''">
+			<if test="key == 'subject'">
+				where subject like concat('%', #{word}, '%')
+			</if>
+			<if test="key != 'subject'">
+				where ${key} = #{word}
+			</if>
+		</if>
+		order by board_no desc
+		limit #{start}, #{spp}
+	</select>
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.whereismyhome.model.mapper.CommentMapper">
+    <resultMap type="commentDTO" id="dto">
+        <result column="comment_id" property="comment_id"/>
+        <result column="board_no" property="board_no"/>
+        <result column="user_id" property="user_id"/>
+        <result column="register_date" property="register_date"/>
+        <result column="content" property="content"/>
+    </resultMap>
+
+    <insert id="write" parameterType="commentDTO">
+        insert
+        into comment(board_no, user_id, content)
+        values(#{board_no},#{user_id},#{content})
+    </insert>
+
+    <delete id="delete" parameterType="commentDTO">
+        delete from comment
+        where comment_id = #{comment_id}
+    </delete>
+
+    <update id="update" parameterType="commentDTO">
+        update comment
+        set content = #{content}
+        where comment_id = #{comment_id}
+    </update>
+
+    <select id="getTotalCount" parameterType="map" resultType="int">
+        select count(comment_id)
+        from comment
+        where board_no = #{board_no}
+    </select>
+
+    <select id="list" parameterType="map" resultMap="dto">
+        select comment_id, board_no, user_id,  register_date, content,
+        case when date_format(register_date, '%Y%m%d') = date_format(now(), '%Y%m%d')
+        then date_format(register_date, '%H:%i:%s')
+        else date_format(register_date, '%y.%m.%d')
+        end register_date
+        from comment
+        where board_no = #{board_no}
+        order by comment_id desc
+        limit #{start}, #{spp}
+    </select>
+</mapper>
